@@ -6,13 +6,14 @@ import (
 	"healthApi/internal/services"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type ExerciseController struct {
-	service *services.ExerciseService
+	service services.ExerciseService
 }
 
-func NewExerciseController(service *services.ExerciseService) *ExerciseController {
+func NewExerciseController(service services.ExerciseService) *ExerciseController {
 	return &ExerciseController{service: service}
 }
 
@@ -45,4 +46,82 @@ func (c *ExerciseController) GetUserExercises(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, exercises)
+}
+
+func (c *ExerciseController) Update(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var req models.Exercise
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Verify ownership
+	exercise, err := c.service.GetByID(uint(id))
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, err.Error())
+		return
+	}
+
+	userID, _ := ctx.Get("userID")
+	if exercise.UserID != userID.(uint) {
+		ctx.JSON(http.StatusForbidden, "Not authorized to update this exercise record")
+		return
+	}
+
+	// Update exercise fields
+	exercise.Type = req.Type
+	exercise.Duration = req.Duration
+	exercise.Intensity = req.Intensity
+	exercise.Date = req.Date
+	exercise.Description = req.Description
+
+	if err := c.service.Update(exercise); err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response := models.Exercise{
+
+		Type:        exercise.Type,
+		Duration:    exercise.Duration,
+		Intensity:   exercise.Intensity,
+		Date:        exercise.Date,
+		Description: exercise.Description,
+	}
+
+	ctx.JSON(http.StatusOK, response)
+}
+
+func (c *ExerciseController) Delete(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Verify ownership
+	exercise, err := c.service.GetByID(uint(id))
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, err.Error())
+		return
+	}
+
+	userID, _ := ctx.Get("userID")
+	if exercise.UserID != userID.(uint) {
+		ctx.JSON(http.StatusForbidden, "\"Not authorized to delete this exercise record")
+		return
+	}
+
+	if err := c.service.Delete(uint(id)); err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Exercise record deleted successfully")
 }

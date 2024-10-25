@@ -6,22 +6,43 @@ import (
 	"time"
 )
 
-type ExerciseService struct {
-	repo *repositories.ExerciseRepository
+type ExerciseService interface {
+	CreateExercise(exercise *models.Exercise) error
+	GetByID(id uint) (*models.Exercise, error)
+	GetUserExercises(userID uint) ([]models.Exercise, error)
+	GetExercisesByDateRange(userID uint, startDate, endDate time.Time) ([]models.Exercise, error)
+	Update(exercise *models.Exercise) error
+	Delete(id uint) error
 }
 
-func NewExerciseService(repo *repositories.ExerciseRepository) *ExerciseService {
-	return &ExerciseService{repo: repo}
+type exerciseService struct {
+	repo repositories.ExerciseRepository
 }
 
-func (s *ExerciseService) CreateExercise(exercise *models.Exercise) error {
+func NewExerciseService(repo repositories.ExerciseRepository) ExerciseService {
+	return &exerciseService{repo: repo}
+}
+
+func (s *exerciseService) CreateExercise(exercise *models.Exercise) error {
 	return s.repo.Create(exercise)
 }
 
-func (s *ExerciseService) GetUserExercises(userID uint) ([]models.Exercise, error) {
+func (s *exerciseService) GetByID(id uint) (*models.Exercise, error) {
+	return s.repo.GetByID(id)
+}
+
+func (s *exerciseService) GetUserExercises(userID uint) ([]models.Exercise, error) {
 	return s.repo.GetByUserID(userID)
 }
 
-func (s *ExerciseService) GetExercisesByDateRange(userID uint, startDate, endDate time.Time) ([]models.Exercise, error) {
+func (s *exerciseService) GetExercisesByDateRange(userID uint, startDate, endDate time.Time) ([]models.Exercise, error) {
 	return s.repo.GetByDateRange(userID, startDate, endDate)
+}
+
+func (s *exerciseService) Update(exercise *models.Exercise) error {
+	return s.repo.Update(exercise)
+}
+
+func (s *exerciseService) Delete(id uint) error {
+	return s.repo.Delete(id)
 }
