@@ -1,0 +1,15 @@
+server:
+  port: 8080
+  mode: development
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: mysecretpassword
+  dbname: health_db
+  sslmode: disable
+
+jwt:
+  secret: your-secret-key
+  expiration: 30d
