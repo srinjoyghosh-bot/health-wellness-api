@@ -45,7 +45,7 @@ func main() {
 
 	// Global middleware
 	router.Use(gin.Recovery())
-	// router.Use(middleware.Logger())
+	router.Use(middlewares.Logger())
 
 	// Routes
 	api := router.Group("/api")
