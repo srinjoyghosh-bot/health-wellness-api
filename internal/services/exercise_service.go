@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+	"gorm.io/gorm"
 	"healthApi/internal/models"
 	"healthApi/internal/repositories"
 	"healthApi/internal/utils"
@@ -45,7 +47,11 @@ func (s *exerciseService) GetByID(id uint) (*models.Exercise, error) {
 }
 
 func (s *exerciseService) GetUserExercises(userID uint) ([]models.Exercise, error) {
-	return s.repo.GetByUserID(userID)
+	exercises, result := s.repo.GetByUserID(userID)
+	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+	return exercises, nil
 }
 
 func (s *exerciseService) GetExercisesByDateRange(userID uint, startDate, endDate time.Time) ([]models.Exercise, error) {

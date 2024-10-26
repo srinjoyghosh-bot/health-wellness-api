@@ -25,7 +25,7 @@ func AuthMiddleware(jwtService utils.JWTService) gin.HandlerFunc {
 
 		userID, err := jwtService.ValidateToken(parts[1])
 		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token : " + err.Error()})
 			ctx.Abort()
 			return
 		}

@@ -12,4 +12,4 @@ database:
 
 jwt:
   secret: your-secret-key
-  expiration: 30d
+  expiration: 30

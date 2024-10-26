@@ -57,9 +57,15 @@ func (c *ExerciseController) CreateExercise(ctx *gin.Context) {
 }
 
 func (c *ExerciseController) GetUserExercises(ctx *gin.Context) {
-	userID := ctx.GetUint("userID")
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, utils.ErrorResponse(
+			"User not authenticated",
+		))
+		return
+	}
 	log.Print("In GetUserExercises userId=", userID)
-	exercises, err := c.service.GetUserExercises(userID)
+	exercises, err := c.service.GetUserExercises(userID.(uint))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err.Error()))
 		return
@@ -69,13 +75,13 @@ func (c *ExerciseController) GetUserExercises(ctx *gin.Context) {
 }
 
 func (c *ExerciseController) Update(ctx *gin.Context) {
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	id, err := utils.ParseUint(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err.Error()))
 		return
 	}
 
-	var req models.Exercise
+	var req models.ExerciseUpdateRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err.Error()))
 		return
@@ -87,24 +93,26 @@ func (c *ExerciseController) Update(ctx *gin.Context) {
 	}
 
 	// Verify ownership
-	exercise, err := c.service.GetByID(uint(id))
+	exercise, err := c.service.GetByID(id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, err.Error())
 		return
 	}
 
-	userID, _ := ctx.Get("userID")
+	userID, exists := ctx.Get("userID")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, utils.ErrorResponse(
+			"User not authenticated",
+		))
+		return
+	}
 	if exercise.UserID != userID.(uint) {
 		ctx.JSON(http.StatusForbidden, utils.ErrorResponse("Not authorized to update this exercise record"))
 		return
 	}
 
 	// Update exercise fields
-	exercise.Type = req.Type
-	exercise.Duration = req.Duration
-	exercise.Intensity = req.Intensity
-	exercise.Date = req.Date
-	exercise.Description = req.Description
+	exercise.UpdateFromRequest(req)
 
 	if err := c.service.Update(exercise); err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -112,7 +120,7 @@ func (c *ExerciseController) Update(ctx *gin.Context) {
 	}
 
 	response := models.ExerciseResponse{
-
+		ID:          exercise.ID,
 		Type:        exercise.Type,
 		Duration:    exercise.Duration,
 		Intensity:   exercise.Intensity,

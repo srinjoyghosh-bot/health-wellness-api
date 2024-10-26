@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"log"
 	"time"
 )
 
@@ -38,6 +39,7 @@ func (s *jwtService) ValidateToken(tokenString string) (uint, error) {
 	})
 
 	if err != nil {
+		log.Println("Error in parse", err)
 		return 0, err
 	}
 

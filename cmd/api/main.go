@@ -77,7 +77,7 @@ func main() {
 			exercises := protected.Group("/exercises")
 			{
 				exercises.POST("/", exerciseController.CreateExercise)
-				exercises.GET("/:id", exerciseController.GetUserExercises)
+				exercises.GET("/", exerciseController.GetUserExercises)
 				exercises.PUT("/:id", exerciseController.Update)
 				exercises.DELETE("/:id", exerciseController.Delete)
 			}
