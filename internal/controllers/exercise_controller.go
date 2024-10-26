@@ -71,7 +71,12 @@ func (c *ExerciseController) GetUserExercises(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, utils.SuccessResponse("Exercises found", exercises))
+	var response []models.ExerciseResponse
+	for _, exercise := range exercises {
+		response = append(response, exercise.ToResponse())
+	}
+
+	ctx.JSON(http.StatusOK, utils.SuccessResponse("Exercises found", response))
 }
 
 func (c *ExerciseController) Update(ctx *gin.Context) {
@@ -119,14 +124,7 @@ func (c *ExerciseController) Update(ctx *gin.Context) {
 		return
 	}
 
-	response := models.ExerciseResponse{
-		ID:          exercise.ID,
-		Type:        exercise.Type,
-		Duration:    exercise.Duration,
-		Intensity:   exercise.Intensity,
-		Date:        exercise.Date,
-		Description: exercise.Description,
-	}
+	response := exercise.ToResponse()
 
 	ctx.JSON(http.StatusOK, utils.SuccessResponse("Exercise updated", response))
 }

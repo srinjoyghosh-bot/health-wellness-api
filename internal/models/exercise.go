@@ -38,7 +38,6 @@ type ExerciseResponse struct {
 	Intensity   string    `json:"intensity"`
 	Date        time.Time `json:"date"`
 	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"createdAt"`
 }
 
 func (e *Exercise) UpdateFromRequest(req ExerciseUpdateRequest) {
@@ -56,5 +55,16 @@ func (e *Exercise) UpdateFromRequest(req ExerciseUpdateRequest) {
 	}
 	if !req.Date.IsZero() {
 		e.Date = req.Date
+	}
+}
+
+func (e *Exercise) ToResponse() ExerciseResponse {
+	return ExerciseResponse{
+		ID:          e.ID,
+		Type:        e.Type,
+		Duration:    e.Duration,
+		Intensity:   e.Intensity,
+		Date:        e.Date,
+		Description: e.Description,
 	}
 }
