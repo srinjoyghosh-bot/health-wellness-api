@@ -8,7 +8,7 @@ import (
 type UserRepository interface {
 	Create(user *models.User) error
 	GetByID(id uint) (*models.User, error)
-	GetByEmail(email string) (*models.User, error)
+	GetByEmail(email string) (*models.User, *gorm.DB)
 	Update(user *models.User) error
 	Delete(id uint) error
 }
@@ -31,10 +31,10 @@ func (r *userRepository) GetByID(id uint) (*models.User, error) {
 	return &user, err
 }
 
-func (r *userRepository) GetByEmail(email string) (*models.User, error) {
+func (r *userRepository) GetByEmail(email string) (*models.User, *gorm.DB) {
 	var user models.User
-	err := r.db.Where("email = ?", email).First(&user).Error
-	return &user, err
+	result := r.db.Where("email = ?", email).First(&user)
+	return &user, result
 }
 
 func (r *userRepository) Update(user *models.User) error {

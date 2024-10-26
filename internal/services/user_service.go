@@ -1,10 +1,14 @@
 package services
 
 import (
+	"errors"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+
 	"healthApi/internal/models"
 	"healthApi/internal/repositories"
 	"healthApi/internal/utils"
+
 	"time"
 )
 
@@ -28,9 +32,12 @@ func NewUserService(repo repositories.UserRepository) UserService {
 
 func (s *userService) Create(user *models.User) error {
 	// Check if user already exists
-	existing, _ := s.repo.GetByEmail(user.Email)
-	if existing != nil {
+	_, result := s.repo.GetByEmail(user.Email)
+	if result.RowsAffected > 0 {
 		return utils.NewBadRequestError("Email already registered")
+	}
+	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return utils.NewInternalServerError("Error fetching email")
 	}
 
 	// Hash password
@@ -84,12 +91,12 @@ func (s *userService) Delete(id uint) error {
 }
 
 func (s *userService) Authenticate(email, password string) (*models.User, error) {
-	user, err := s.repo.GetByEmail(email)
-	if err != nil {
+	user, result := s.repo.GetByEmail(email)
+	if result.Error != nil {
 		return nil, utils.NewUnauthorizedError("Invalid credentials")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return nil, utils.NewUnauthorizedError("Invalid credentials")
 	}
