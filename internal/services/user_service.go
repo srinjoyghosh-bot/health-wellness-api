@@ -1,10 +1,11 @@
 package services
 
 import (
-	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"healthApi/internal/models"
 	"healthApi/internal/repositories"
+	"healthApi/internal/utils"
+	"time"
 )
 
 type UserService interface {
@@ -14,6 +15,7 @@ type UserService interface {
 	Update(user *models.User) error
 	Delete(id uint) error
 	Authenticate(email, password string) (*models.User, error)
+	ChangePassword(userID uint, oldPassword, newPassword string) error
 }
 
 type userService struct {
@@ -25,40 +27,95 @@ func NewUserService(repo repositories.UserRepository) UserService {
 }
 
 func (s *userService) Create(user *models.User) error {
+	// Check if user already exists
+	existing, _ := s.repo.GetByEmail(user.Email)
+	if existing != nil {
+		return utils.NewBadRequestError("Email already registered")
+	}
+
+	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return utils.NewInternalServerError("Failed to hash password")
 	}
 	user.Password = string(hashedPassword)
+
+	// Set default values
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
 	return s.repo.Create(user)
 }
 
 func (s *userService) GetByID(id uint) (*models.User, error) {
-	return s.repo.GetByID(id)
+	user, err := s.repo.GetByID(id)
+	if err != nil {
+		return nil, utils.NewNotFoundError("User not found")
+	}
+	return user, nil
 }
 
 func (s *userService) GetByEmail(email string) (*models.User, error) {
-	return s.repo.GetByEmail(email)
+	user, err := s.repo.GetByEmail(email)
+	if err != nil {
+		return nil, utils.NewNotFoundError("User not found")
+	}
+	return user, nil
 }
 
 func (s *userService) Update(user *models.User) error {
+	existing, err := s.GetByID(user.ID)
+	if err != nil {
+		return err
+	}
+
+	// Don't update password through this method
+	user.Password = existing.Password
+	user.UpdatedAt = time.Now()
+
 	return s.repo.Update(user)
 }
 
 func (s *userService) Delete(id uint) error {
+	if _, err := s.GetByID(id); err != nil {
+		return err
+	}
 	return s.repo.Delete(id)
 }
 
 func (s *userService) Authenticate(email, password string) (*models.User, error) {
 	user, err := s.repo.GetByEmail(email)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUnauthorizedError("Invalid credentials")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return nil, errors.New("invalid password")
+		return nil, utils.NewUnauthorizedError("Invalid credentials")
 	}
 
 	return user, nil
+}
+
+func (s *userService) ChangePassword(userID uint, oldPassword, newPassword string) error {
+	user, err := s.GetByID(userID)
+	if err != nil {
+		return err
+	}
+
+	// Verify old password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		return utils.NewUnauthorizedError("Invalid current password")
+	}
+
+	// Hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return utils.NewInternalServerError("Failed to hash password")
+	}
+
+	user.Password = string(hashedPassword)
+	user.UpdatedAt = time.Now()
+
+	return s.repo.Update(user)
 }

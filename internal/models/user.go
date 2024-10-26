@@ -35,3 +35,7 @@ type UserResponse struct {
 	LastName  string    `json:"lastName"`
 	CreatedAt time.Time `json:"createdAt"`
 }
+
+type UserTokenResponse struct {
+	TOKEN string `json:"token"`
+}

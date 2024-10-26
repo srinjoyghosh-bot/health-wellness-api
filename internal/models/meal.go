@@ -11,6 +11,7 @@ type Meal struct {
 	Type        string    `gorm:"not null" json:"type"` // breakfast, lunch, dinner, snack
 	Description string    `json:"description"`
 	Date        time.Time `gorm:"not null" json:"date"`
+	CreatedAt   time.Time `sql:"DEFAULT:current_timestamp" json:"createdAt"`
 }
 
 type MealRequest struct {
@@ -25,4 +26,14 @@ type MealResponse struct {
 	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
 	CreatedAt   time.Time `json:"createdAt"`
+}
+
+func (m Meal) ToResponse() MealResponse {
+	return MealResponse{
+		ID:          m.ID,
+		Type:        m.Type,
+		Description: m.Description,
+		Date:        m.Date,
+		CreatedAt:   m.CreatedAt,
+	}
 }
