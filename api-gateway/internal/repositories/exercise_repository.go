@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"api-gateway/internal/models"
 	"gorm.io/gorm"
+	"healthApi/api-gateway/internal/models"
 	"log"
 	"time"
 )

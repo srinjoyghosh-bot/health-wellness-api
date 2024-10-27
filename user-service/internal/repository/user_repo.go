@@ -1,8 +1,8 @@
-package repositories
+package repository
 
 import (
 	"gorm.io/gorm"
-	"healthApi/api-gateway/internal/models"
+	"user-service/internal/models"
 )
 
 type UserRepository interface {

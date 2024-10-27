@@ -1,9 +1,9 @@
 package services
 
 import (
-	"api-gateway/internal/models"
-	"api-gateway/internal/repositories"
-	"api-gateway/internal/utils"
+	"healthApi/api-gateway/internal/models"
+	"healthApi/api-gateway/internal/repositories"
+	"healthApi/api-gateway/internal/utils"
 	"time"
 )
 

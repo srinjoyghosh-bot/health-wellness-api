@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 50052
   mode: development
 
 database:
@@ -10,10 +10,4 @@ database:
   dbname: health_db
   sslmode: disable
 
-jwt:
-  secret: your-secret-key
-  expiration: 30
 
-service:
-  exercise_addr: localhost:50051
-  user_addr: localhost:50052

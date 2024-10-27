@@ -1,11 +1,11 @@
 package database
 
 import (
-	models2 "api-gateway/internal/models"
 	"fmt"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	models2 "healthApi/api-gateway/internal/models"
 	"log"
 )
 

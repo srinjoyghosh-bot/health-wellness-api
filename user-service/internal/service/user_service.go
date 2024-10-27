@@ -1,14 +1,13 @@
-package services
+package service
 
 import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"healthApi/api-gateway/internal/models"
-	"healthApi/api-gateway/internal/repositories"
-	"healthApi/api-gateway/internal/utils"
-
 	"time"
+	"user-service/internal/models"
+	"user-service/internal/repository"
+	"user-service/internal/utils"
 )
 
 type UserService interface {
@@ -22,10 +21,10 @@ type UserService interface {
 }
 
 type userService struct {
-	repo repositories.UserRepository
+	repo repository.UserRepository
 }
 
-func NewUserService(repo repositories.UserRepository) UserService {
+func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 

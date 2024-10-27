@@ -9,3 +9,9 @@ gen-exercise:
 		--proto_path=proto "proto/exercises/exercise.proto" \
 		--go_out=exercise-service/internal/genproto/ --go_opt=paths=source_relative \
   	--go-grpc_out=exercise-service/internal/genproto/ --go-grpc_opt=paths=source_relative
+
+gen-user:
+	@protoc \
+		--proto_path=proto "proto/user/user.proto" \
+		--go_out=user-service/internal/genproto/ --go_opt=paths=source_relative \
+  	--go-grpc_out=user-service/internal/genproto/ --go-grpc_opt=paths=source_relative

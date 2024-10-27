@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"api-gateway/internal/utils"
 	"github.com/gin-gonic/gin"
+	"healthApi/api-gateway/internal/utils"
 	"net/http"
 	"strings"
 )

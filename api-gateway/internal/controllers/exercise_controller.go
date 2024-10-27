@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"api-gateway/internal/models"
-	"api-gateway/internal/services"
-	utils2 "api-gateway/internal/utils"
 	"github.com/gin-gonic/gin"
+	"healthApi/api-gateway/internal/clients"
+	"healthApi/api-gateway/internal/models"
+	"healthApi/api-gateway/internal/services"
+	utils2 "healthApi/api-gateway/internal/utils"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,10 +13,11 @@ import (
 
 type ExerciseController struct {
 	service services.ExerciseService
+	client  clients.ExerciseClient
 }
 
-func NewExerciseController(service services.ExerciseService) *ExerciseController {
-	return &ExerciseController{service: service}
+func NewExerciseController(service services.ExerciseService, client clients.ExerciseClient) *ExerciseController {
+	return &ExerciseController{service: service, client: client}
 }
 
 func (c *ExerciseController) CreateExercise(ctx *gin.Context) {
@@ -39,19 +41,25 @@ func (c *ExerciseController) CreateExercise(ctx *gin.Context) {
 		return
 	}
 
-	var exercise models.Exercise = models.Exercise{
-		UserID:      userID.(uint),
-		Type:        req.Type,
-		Duration:    req.Duration,
-		Intensity:   req.Intensity,
-		Date:        req.Date,
-		Description: req.Description,
-	}
-
-	if err := c.service.CreateExercise(&exercise); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	_, err := c.client.CreateExercise(ctx.Request.Context(), userID.(uint), req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils2.ErrorResponse("Failed to create exercise : "+err.Error()))
 		return
 	}
+
+	//var exercise models.Exercise = models.Exercise{
+	//	UserID:      userID.(uint),
+	//	Type:        req.Type,
+	//	Duration:    req.Duration,
+	//	Intensity:   req.Intensity,
+	//	Date:        req.Date,
+	//	Description: req.Description,
+	//}
+	//
+	//if err := c.service.CreateExercise(&exercise); err != nil {
+	//	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	//	return
+	//}
 
 	ctx.JSON(http.StatusCreated, utils2.SuccessResponse("Exercise created", req))
 }

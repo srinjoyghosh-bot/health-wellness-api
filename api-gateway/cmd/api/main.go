@@ -1,16 +1,17 @@
 package main
 
 import (
-	"api-gateway/internal/config"
-	controllers2 "api-gateway/internal/controllers"
-	middlewares2 "api-gateway/internal/middlewares"
-	repositories2 "api-gateway/internal/repositories"
-	services2 "api-gateway/internal/services"
-	"api-gateway/internal/utils"
-	"api-gateway/pkg/database"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"healthApi/api-gateway/internal/clients"
+	"healthApi/api-gateway/internal/config"
+	controllers2 "healthApi/api-gateway/internal/controllers"
+	middlewares2 "healthApi/api-gateway/internal/middlewares"
+	repositories2 "healthApi/api-gateway/internal/repositories"
+	services2 "healthApi/api-gateway/internal/services"
+	"healthApi/api-gateway/internal/utils"
+	"healthApi/api-gateway/pkg/database"
 	"log"
 	"time"
 )
@@ -45,8 +46,15 @@ func main() {
 	sleepService := services2.NewSleepService(sleepRepo)
 	mealService := services2.NewMealService(mealRepo)
 
+	//Initialize gRPC clients
+	exerciseClient, err := clients.NewExerciseClient(cfg.Service.ExerciseAddr)
+	if err != nil {
+		log.Fatalf("Failed to create exercise client: %v", err)
+	}
+	defer exerciseClient.Close()
+
 	// Initialize controllers
-	exerciseController := controllers2.NewExerciseController(exerciseService)
+	exerciseController := controllers2.NewExerciseController(exerciseService, exerciseClient)
 	userController := controllers2.NewUserController(userService, jwtService)
 	goalController := controllers2.NewGoalController(goalService)
 	hydrationController := controllers2.NewHydrationController(hydrationService)

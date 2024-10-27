@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"api-gateway/internal/models"
-	"api-gateway/internal/services"
-	utils2 "api-gateway/internal/utils"
 	"github.com/gin-gonic/gin"
+	"healthApi/api-gateway/internal/models"
+	"healthApi/api-gateway/internal/services"
+	utils2 "healthApi/api-gateway/internal/utils"
 	"net/http"
 	"time"
 )
