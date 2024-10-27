@@ -15,7 +15,7 @@ type ExerciseClient struct {
 }
 
 func NewExerciseClient(serverAddr string) (ExerciseClient, error) {
-	conn, err := grpc.NewClient(serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(":50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return ExerciseClient{}, err
 	}

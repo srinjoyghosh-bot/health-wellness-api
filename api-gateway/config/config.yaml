@@ -15,5 +15,5 @@ jwt:
   expiration: 30
 
 service:
-  exercise_addr: localhost:50051
-  user_addr: localhost:50052
+  exercise_addr: :50051
+  user_addr: :50052
