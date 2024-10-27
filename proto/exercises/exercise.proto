@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package exercise;
+
+option go_package = "/healthApi/proto/exercise;exercisepb";
+
+import "google/protobuf/timestamp.proto";
+
+
+service ExerciseService {
+  rpc CreateExercise(CreateExerciseRequest) returns (CreateExerciseResponse);
+  rpc GetAllExercise(GetAllExerciseRequest) returns (GetAllExerciseResponse);
+}
+
+message Exercise {
+  int32 id = 1;
+  google.protobuf.Timestamp date = 2;
+  string description = 3;
+  int32 duration = 4;
+  string intensity = 5;
+  string type=6;
+}
+
+message CreateExerciseRequest {
+  int32 user_id = 1;
+  google.protobuf.Timestamp date = 2;
+  string description = 3;
+  int32 duration = 4;
+  string intensity = 5;
+  string type=6;
+}
+
+message CreateExerciseResponse {
+  Exercise exercise = 1;
+}
+
+message GetAllExerciseRequest {
+  int32 user_id = 1;
+}
+
+message GetAllExerciseResponse {
+  repeated Exercise exercise = 1;
+}
+
