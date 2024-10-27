@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"healthApi/api-gateway/internal/clients"
 	"healthApi/api-gateway/internal/models"
 	"healthApi/api-gateway/internal/services"
 	utils2 "healthApi/api-gateway/internal/utils"
@@ -11,12 +12,14 @@ import (
 type UserController struct {
 	service services.UserService
 	jwt     utils2.JWTService
+	client  clients.UserClient
 }
 
-func NewUserController(service services.UserService, jwt utils2.JWTService) *UserController {
+func NewUserController(service services.UserService, jwt utils2.JWTService, client clients.UserClient) *UserController {
 	return &UserController{
 		service: service,
 		jwt:     jwt,
+		client:  client,
 	}
 }
 
@@ -31,21 +34,26 @@ func (c *UserController) Register(ctx *gin.Context) {
 		return
 	}
 
-	user := models.User{
-		Email:     req.Email,
-		Password:  req.Password,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-	}
-
-	if err := c.service.Create(&user); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	//user := models.User{
+	//	Email:     req.Email,
+	//	Password:  req.Password,
+	//	FirstName: req.FirstName,
+	//	LastName:  req.LastName,
+	//}
+	//
+	//if err := c.service.Create(&user); err != nil {
+	//	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	//	return
+	//}
+	userId, er := c.client.Register(ctx.Request.Context(), req)
+	if er != nil {
+		ctx.JSON(http.StatusInternalServerError, utils2.ErrorResponse("Failed to register user : "+er.Error()))
 		return
 	}
 
-	token, err := c.jwt.GenerateToken(user.ID)
+	token, err := c.jwt.GenerateToken(userId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, utils2.ErrorResponse("Error generating token : "+err.Error()))
 		return
 	}
 
@@ -62,13 +70,19 @@ func (c *UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	user, err := c.service.Authenticate(req.Email, req.Password)
+	//user, err := c.service.Authenticate(req.Email, req.Password)
+	//if err != nil {
+	//	ctx.JSON(http.StatusUnauthorized, utils2.ErrorResponse("Invalid Credentials"))
+	//	return
+	//}
+
+	userId, err := c.client.Login(ctx.Request.Context(), req)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, utils2.ErrorResponse("Invalid Credentials"))
 		return
 	}
 
-	token, err := c.jwt.GenerateToken(user.ID)
+	token, err := c.jwt.GenerateToken(userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils2.ErrorResponse(err.Error()))
 		return

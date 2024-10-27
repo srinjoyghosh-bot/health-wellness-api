@@ -47,15 +47,23 @@ func main() {
 	mealService := services2.NewMealService(mealRepo)
 
 	//Initialize gRPC clients
+	log.Println("Exercise service address", cfg.Service.ExerciseAddr)
 	exerciseClient, err := clients.NewExerciseClient(cfg.Service.ExerciseAddr)
 	if err != nil {
 		log.Fatalf("Failed to create exercise client: %v", err)
 	}
 	defer exerciseClient.Close()
 
+	log.Println("User service address", cfg.Service.UserAddr)
+	userClient, err := clients.NewUserClient(cfg.Service.UserAddr)
+	if err != nil {
+		log.Fatalf("Failed to create exercise client: %v", err)
+	}
+	defer userClient.Close()
+
 	// Initialize controllers
 	exerciseController := controllers2.NewExerciseController(exerciseService, exerciseClient)
-	userController := controllers2.NewUserController(userService, jwtService)
+	userController := controllers2.NewUserController(userService, jwtService, userClient)
 	goalController := controllers2.NewGoalController(goalService)
 	hydrationController := controllers2.NewHydrationController(hydrationService)
 	sleepController := controllers2.NewSleepController(sleepService)
