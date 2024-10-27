@@ -73,18 +73,18 @@ func (c *ExerciseController) GetUserExercises(ctx *gin.Context) {
 		return
 	}
 	log.Print("In GetUserExercises userId=", userID)
-	exercises, err := c.service.GetUserExercises(userID.(uint))
+	exercises, err := c.client.GetAllExercise(ctx.Request.Context(), userID.(uint))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils2.ErrorResponse(err.Error()))
 		return
 	}
 
-	var response []models.ExerciseResponse
-	for _, exercise := range exercises {
-		response = append(response, exercise.ToResponse())
-	}
+	//var response []models.ExerciseResponse
+	//for _, exercise := range exercises {
+	//	response = append(response, exercise.ToResponse())
+	//}
 
-	ctx.JSON(http.StatusOK, utils2.SuccessResponse("Exercises found", response))
+	ctx.JSON(http.StatusOK, utils2.SuccessResponse("Exercises found", exercises))
 }
 
 func (c *ExerciseController) Update(ctx *gin.Context) {
